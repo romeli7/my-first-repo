@@ -18,12 +18,11 @@
 
 <style>
 body {
-  margin: 0;
-  padding: 40px 20px;
-  font-family: 'Roboto', sans-serif;
-  color: white;
-  background: #0a0029 url('background.png') no-repeat center center fixed;
-  background-size: cover;
+  margin:0;
+  padding:40px 20px;
+  font-family:'Roboto',sans-serif;
+  color:white;
+  background:#0a0029;
 }
 header {
   display: flex;
@@ -128,17 +127,9 @@ section#timeline-section h2 {
 #timeline-wrapper-old, #timeline-wrapper-modern {
   background:#ffffff;
   margin:20px auto;
-  /* Remove horizontal scrolling */
-  overflow: hidden; /* hides scrollbar and clips edges */
-  border-radius: 8px;
-  box-shadow: 0 0 30px #7a33d8aa;
-}
-
-/* Make SVG inside also have rounded corners */
-#timeline-wrapper-old svg,
-#timeline-wrapper-modern svg {
-  border-radius: 8px;
-  display: block; /* remove inline gap */
+  overflow-x:auto;
+  border-radius:8px;
+  box-shadow:0 0 30px #7a33d8aa;
 }
 .tooltip {
   position:absolute;
@@ -157,7 +148,6 @@ section#timeline-section h2 {
   fill:#333;
 }
 </style>
-
 </head>
 <body>
 
@@ -477,6 +467,8 @@ new p5(p=>{
 })();
   </script>
   
+
+<!-- D3.js Timeline -->
 <!-- D3.js Timeline -->
 <script>
 const margin = { top: 60, right: 80, bottom: 80, left: 80 };
@@ -564,7 +556,6 @@ function createTimeline(containerId, data, isOld) {
     .on("mousemove", function(event, d) {
       const xPos = x(d.year);
       const isNearRight = xPos > width - 100;
-      // Tooltip left shift for last timeline points so it doesn't go off screen
       tooltip
         .style("left", (isNearRight ? (event.pageX - 260) : (event.pageX + 15)) + "px")
         .style("top", (event.pageY - 40) + "px");
@@ -580,25 +571,24 @@ function createTimeline(containerId, data, isOld) {
     .attr("stroke", "#b399ff")
     .attr("stroke-width", 2);
 
-  // Labels: aligned vertically at -45 except last two old timeline events split and slightly raised
-  events.each(function(d, i) {
+  // Labels: all aligned y = -35, but split last two of old timeline onto two lines
+    events.each(function(d, i) {
     const g = d3.select(this);
     const xPos = x(d.year);
     const anchor = xPos > width - 100 ? "end" : xPos < 100 ? "start" : "middle";
     const dx = xPos > width - 100 ? "-10" : xPos < 100 ? "10" : "0";
 
     if (isOld && i >= 2) {
-      // Split label for clarity, placed at -50 and -32 y positions for vertical spacing
       const parts = d.label.split(" ");
       g.append("text")
-        .attr("y", -50)
+        .attr("y", -45)
         .attr("text-anchor", anchor)
         .attr("dx", dx)
         .attr("fill", "#333")
         .attr("font-weight", 600)
         .text(parts[0]);
       g.append("text")
-        .attr("y", -32)
+        .attr("y", -28)
         .attr("text-anchor", anchor)
         .attr("dx", dx)
         .attr("fill", "#333")
@@ -624,3 +614,7 @@ createTimeline("#timeline-wrapper-modern", dataModern, false);
 
 </body>
 </html>
+
+
+
+
