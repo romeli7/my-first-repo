@@ -200,6 +200,7 @@ section#timeline-section h2 {
     <div id="timeline-wrapper-modern"></div>
     <div id="tooltip" class="tooltip" style="opacity:0;"></div>
   </section>
+
 </main>
 
 <script>
@@ -620,6 +621,284 @@ function createTimeline(containerId, data, isOld) {
 createTimeline("#timeline-wrapper-old", dataOld, true);
 // Modern timeline normal labels
 createTimeline("#timeline-wrapper-modern", dataModern, false);
+</script>
+
+<section id="relation-network-section" style="margin-top:80px; max-width:1300px; margin-left:auto; margin-right:auto;">
+  <h2 style="text-align:center; color:#cc88ff;">Amethyst Light Emergence Network</h2>
+  <p style="color:#cc88ff; font-size:16px; max-width:650px; margin:0 auto 40px auto; line-height:1.4; text-align:left;">
+  Hover over the numbered nodes to reveal detailed explanations of key chemistry and physics concepts involved in amethyst’s coloration.<br/>
+  Arrows illustrate the logical influence and flow between these processes.<br/>
+  The 3D visualization on the right dynamically highlights what is going on at each node stage.
+  </p>
+
+  <div style="display:flex; flex-wrap:nowrap; justify-content:center; gap:20px;">
+    <!-- Network Container -->
+    <div id="networkContainer" style="
+      position:relative; 
+      width:600px; 
+      height:480px; 
+      background:#fff; 
+      border-radius:10px; 
+      box-shadow:0 0 15px #7a33d8aa;
+      overflow: hidden;">
+      <!-- The SVG will be appended inside this container -->
+    </div>
+  
+    <!-- 3D Canvas -->
+    <div style="
+      width:600px; 
+      height:480px; 
+      border-radius:10px; 
+      box-shadow:0 0 25px #7a33d8aa; 
+      overflow:hidden; 
+      background:transparent;">
+      <canvas id="threejsExplanationCanvas" style="
+        display:block; 
+        width:600px; 
+        height:480px; 
+        border-radius:10px;">
+      </canvas>
+    </div>
+  </div>
+
+</section>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(() => {
+  const width = 600, height = 480;  // EXACTLY container size!
+  const svg = d3.select("#networkContainer").append("svg")
+    .attr("width", width)
+    .attr("height", height)
+    .style("overflow", "visible")
+    .style("background-color", "transparent")  // container already white with border-radius
+    .style("border-radius", "10px")            // round corners on SVG itself
+
+  const nodes = [
+    { id: "Crystal Structure", desc: "The quartz lattice provides the stable framework that hosts impurities influencing optical properties.", color: "#9F5FFF", step: 1 },
+    { id: "Iron Impurities", desc: "Iron ions substitute in the crystal lattice creating color centers responsible for purple hues.", color: "#7F3FBF", step: 2 },
+    { id: "Radiation Exposure", desc: "Natural radiation alters iron ion states, modifying electron behavior.", color: "#CC88FF", step: 3 },
+    { id: "Electron Transitions", desc: "Physics behind absorption and emission of light causing amethyst’s characteristic color.", color: "#B266FF", step: 4 },
+    { id: "Visible Purple Light", desc: "Resulting purple light perceived by our eyes due to combined effects of all above.", color: "#D9B3FF", step: 5 }
+  ];
+
+  const links = [
+    { source: "Crystal Structure", target: "Iron Impurities" },
+    { source: "Iron Impurities", target: "Radiation Exposure" },
+    { source: "Radiation Exposure", target: "Electron Transitions" },
+    { source: "Crystal Structure", target: "Electron Transitions" },
+    { source: "Electron Transitions", target: "Visible Purple Light" }
+  ];
+
+  nodes.forEach(d => {
+    switch(d.id) {
+      case "Crystal Structure":
+        d.x = width/2;
+        d.y = 80;
+        break;
+      case "Iron Impurities":
+        d.x = width/2 - 180;
+        d.y = 200;
+        break;
+      case "Radiation Exposure":
+        d.x = width/2 + 180;
+        d.y = 200;
+        break;
+      case "Electron Transitions":
+        d.x = width/2;
+        d.y = 300;
+        break;
+      case "Visible Purple Light":
+        d.x = width/2;
+        d.y = 420;
+        break;
+    }
+  });
+
+  svg.append('defs').append('marker')
+    .attr('id', 'arrowhead')
+    .attr('viewBox', '-0 -5 10 10')
+    .attr('refX', 22)
+    .attr('refY', 0)
+    .attr('orient', 'auto')
+    .attr('markerWidth', 7)
+    .attr('markerHeight', 7)
+    .append('svg:path')
+    .attr('d', 'M 0,-5 L 10,0 L 0,5')
+    .attr('fill', '#cc88ff');
+
+  svg.append("g")
+    .attr("class", "links")
+    .selectAll("line")
+    .data(links)
+    .enter()
+    .append("line")
+    .attr("stroke", "#b399ff")
+    .attr("stroke-width", 2)
+    .attr("marker-end", "url(#arrowhead)")
+    .attr("x1", d => nodes.find(n => n.id === d.source).x)
+    .attr("y1", d => nodes.find(n => n.id === d.source).y + 24)
+    .attr("x2", d => nodes.find(n => n.id === d.target).x)
+    .attr("y2", d => nodes.find(n => n.id === d.target).y - 24);
+
+  const nodeGroup = svg.append("g").attr("class", "nodes");
+  const nodeElements = nodeGroup.selectAll("g")
+    .data(nodes)
+    .enter()
+    .append("g")
+    .attr("transform", d => `translate(${d.x},${d.y})`)
+    .style("cursor", "pointer");
+
+  nodeElements.append("circle")
+    .attr("r", 24)
+    .attr("fill", d => d.color)
+    .attr("stroke", "#cc88ff")
+    .attr("stroke-width", 3);
+
+  nodeElements.append("text")
+    .attr("text-anchor", "middle")
+    .attr("dy", "0.35em")
+    .attr("fill", "white")
+    .style("font-weight", "900")
+    .style("font-size", "18px")
+    .text(d => d.step);
+
+  nodeElements.append("text")
+    .attr("text-anchor", "middle")
+    .attr("dy", "40px")
+    .attr("fill", "#333")
+    .style("font-weight", "600")
+    .style("font-size", "14px")
+    .text(d => d.id);
+
+  const tooltip = d3.select("body").append("div")
+    .attr("class", "tooltip")
+    .style("opacity", 0)
+    .style("position", "absolute")
+    .style("background", "#6a2d9fdd")
+    .style("color", "white")
+    .style("padding", "8px 12px")
+    .style("border-radius", "8px")
+    .style("font-size", "14px")
+    .style("font-weight", "600")
+    .style("max-width", "240px")
+    .style("pointer-events", "none");
+
+  nodeElements.on("mouseover", (event, d) => {
+    showExplanation(d.id);
+    tooltip.style("opacity", 1)
+      .html(`<strong>${d.step}. ${d.id}</strong><br/>${d.desc}`)
+      .style("left", (event.pageX + 15) + "px")
+      .style("top", (event.pageY - 40) + "px");
+  }).on("mousemove", event => {
+    tooltip.style("left", (event.pageX + 15) + "px")
+      .style("top", (event.pageY - 40) + "px");
+  }).on("mouseout", () => tooltip.style("opacity", 0));
+
+  // THREE.js setup
+  const explanationCanvas = document.getElementById("threejsExplanationCanvas");
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(45, explanationCanvas.clientWidth / explanationCanvas.clientHeight, 0.1, 100);
+  camera.position.z = 5;
+  const renderer = new THREE.WebGLRenderer({canvas: explanationCanvas, alpha: true, antialias: true});
+  renderer.setSize(explanationCanvas.clientWidth, explanationCanvas.clientHeight);
+  renderer.setClearColor(0x000000, 0);  // Transparent background
+
+  const ambientLight = new THREE.AmbientLight(0x8844ff, 0.5);
+  scene.add(ambientLight);
+  const pointLight = new THREE.PointLight(0xcc88ff, 1);
+  pointLight.position.set(5,5,5);
+  scene.add(pointLight);
+
+  const explanationObjects = {};
+  function clearScene() {
+    Object.values(explanationObjects).forEach(obj => scene.remove(obj));
+  }
+
+  const crystalGroup = new THREE.Group();
+  const cubeGeom = new THREE.BoxGeometry(0.5,0.5,0.5);
+  const cubeMat = new THREE.MeshStandardMaterial({color:0x9F5FFF});
+  for(let x=-1;x<=1;x++) {
+    for(let y=-1;y<=1;y++) {
+      for(let z=-1;z<=1;z++) {
+        const cube=new THREE.Mesh(cubeGeom,cubeMat);
+        cube.position.set(x,y,z);
+        crystalGroup.add(cube);
+      }
+    }
+  }
+  explanationObjects["Crystal Structure"]=crystalGroup;
+
+  const impuritiesGroup=new THREE.Group();
+  impuritiesGroup.add(crystalGroup.clone());
+  const sphereGeom=new THREE.SphereGeometry(0.25,16,16);
+  const sphereMat=new THREE.MeshStandardMaterial({color:0xff6600});
+  for(let i=0;i<5;i++){
+    const s=new THREE.Mesh(sphereGeom,sphereMat);
+    s.position.set((Math.random()-0.5)*2,(Math.random()-0.5)*2,(Math.random()-0.5)*2);
+    impuritiesGroup.add(s);
+  }
+  explanationObjects["Iron Impurities"]=impuritiesGroup;
+
+  const radiationGroup=new THREE.Group();
+  radiationGroup.add(crystalGroup.clone());
+  const particleGeom=new THREE.SphereGeometry(0.1,8,8);
+  const particleMat=new THREE.MeshStandardMaterial({color:0xCC88FF,emissive:0xCC88FF});
+  const particles=[];
+  for(let i=0;i<20;i++){
+    const p=new THREE.Mesh(particleGeom,particleMat);
+    p.position.set((Math.random()-0.5)*3,(Math.random()-0.5)*3,(Math.random()-0.5)*3);
+    radiationGroup.add(p);
+    particles.push(p);
+  }
+  explanationObjects["Radiation Exposure"]=radiationGroup;
+
+  const electronGroup=new THREE.Group();
+  const ringGeom=new THREE.RingGeometry(0.5,0.7,32);
+  const ringMat=new THREE.MeshStandardMaterial({color:0xB266FF,side:THREE.DoubleSide,emissive:0xB266FF});
+  for(let i=0;i<3;i++){
+    const r=new THREE.Mesh(ringGeom,ringMat);
+    r.rotation.x=Math.PI/2;
+    r.position.z=i*0.3-0.3;
+    electronGroup.add(r);
+  }
+  explanationObjects["Electron Transitions"]=electronGroup;
+
+  const lightGroup=new THREE.Group();
+  const lightGeom=new THREE.SphereGeometry(1,32,32);
+  const lightMat=new THREE.MeshStandardMaterial({color:0xD9B3FF,emissive:0xD9B3FF,transparent:true,opacity:0.9});
+  const glow=new THREE.Mesh(lightGeom,lightMat);
+  lightGroup.add(glow);
+  explanationObjects["Visible Purple Light"]=lightGroup;
+
+  const clock = new THREE.Clock();
+  let currentNode = null;
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const elapsed=clock.getElapsedTime();
+    if(currentNode==="Radiation Exposure"){
+      particles.forEach((p,i)=>{
+        p.position.x+=Math.sin(elapsed*2+i)*0.002;
+        p.position.y+=Math.cos(elapsed*1.5+i)*0.002;
+      });
+    }
+    if(currentNode && explanationObjects[currentNode]){
+      explanationObjects[currentNode].rotation.y+=0.005;
+      explanationObjects[currentNode].rotation.x+=0.003;
+    }
+    renderer.render(scene,camera);
+  }
+  animate();
+
+  function showExplanation(nodeId){
+    if(currentNode===nodeId) return;
+    currentNode=nodeId;
+    clearScene();
+    scene.add(explanationObjects[nodeId]);
+  }
+})();
 </script>
 
 </body>
