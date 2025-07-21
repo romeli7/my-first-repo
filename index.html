@@ -150,6 +150,118 @@ section#timeline-section h2 {
   font-size:14px;
   font-weight:600;
 }
+
+.neighborhood {
+  fill: url(#galaxyGradient);
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  transition: all 0.3s ease;
+  filter: drop-shadow(0 0 8px rgba(142, 68, 173, 0.7)) drop-shadow(0 0 4px rgba(255, 255, 255, 0.6));
+  opacity: 0.9;
+  stroke-dasharray: 5,3;
+  animation: techScan 2s linear infinite;
+}
+
+.neighborhood:hover {
+  fill: url(#galaxyGradientHover);
+  stroke: #ffffff;
+  cursor: pointer;
+  filter: drop-shadow(0 0 20px rgba(142, 68, 173, 1)) drop-shadow(0 0 10px rgba(255, 255, 255, 0.9)) brightness(1.3);
+  stroke-width: 4;
+  opacity: 1;
+  stroke-dasharray: 3,2;
+  animation: techScan 0.5s linear infinite;
+}
+
+.tech-cross {
+  animation: techRotate 4s linear infinite;
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.6));
+}
+
+@keyframes techRotate {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.neighborhood {
+  animation: nebulaPulse 4s ease-in-out infinite;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 1; }
+}
+
+@keyframes nebulaPulse {
+  0%, 100% { 
+    filter: drop-shadow(0 0 6px rgba(142, 68, 173, 0.6));
+    opacity: 0.9;
+  }
+  50% { 
+    filter: drop-shadow(0 0 8px rgba(142, 68, 173, 0.8));
+    opacity: 0.95;
+  }
+}
+
+@keyframes techScan {
+  0% { stroke-dashoffset: 0; }
+  100% { stroke-dashoffset: 20; }
+}
+
+.tech-pulse {
+  animation: techPulse 2s ease-in-out infinite;
+}
+
+@keyframes techPulse {
+  0%, 100% { 
+    r: 8;
+    opacity: 0.4;
+  }
+  50% { 
+    r: 12;
+    opacity: 0.8;
+  }
+}
+
+/* Tooltip style: normal for all except Manhattan map */
+.tooltip {
+  position: absolute;
+  background: rgba(45, 27, 105, 0.95);
+  padding: 10px 15px;
+  border: 2px solid #9b59b6;
+  border-radius: 4px;
+  font-size: 15px;
+  color: #e8d5ff;
+  pointer-events: none;
+  box-shadow: 0 0 20px rgba(142, 68, 173, 0.6), inset 0 0 10px rgba(142, 68, 173, 0.1);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+  font-family: 'Roboto', sans-serif;
+  text-transform: none;
+  letter-spacing: normal;
+}
+
+/* Special tooltip style for Manhattan Neighborhoods map */
+.tooltip-manhattan {
+  position: absolute;
+  background: rgba(45, 27, 105, 0.95);
+  padding: 10px 15px;
+  border: 2px solid #9b59b6;
+  border-radius: 4px;
+  font-size: 13px;
+  color: #e8d5ff;
+  pointer-events: none;
+  box-shadow: 0 0 20px rgba(142, 68, 173, 0.6), inset 0 0 10px rgba(142, 68, 173, 0.1);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  z-index: 9999;
+  backdrop-filter: blur(5px);
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
 .axis path,.axis line {
   stroke:#aa77ff;
 }
@@ -223,204 +335,605 @@ document.getElementById('demoButton').addEventListener('click',()=>{
 });
 </script>
 
-<!-- p5.js Sketch 1 -->
+<!-- p5.js Sketch 1: Amethyst Galaxies Simulation -->
 <script>
 new p5(p=>{
-  class Circle{
-    constructor(x,y,s,speed){
-      this.x=x;this.y=y;this.s=s;this.speed=speed;
-    }
-    move(){
-      this.x+=this.speed;
-      if(this.x>p.width+this.s)this.x=-this.s;
-    }
-    display(){
-      p.fill(100,0,130,200);
-      p.noStroke();
-      p.ellipse(this.x,this.y,this.s);
-    }
+  let galaxies = [];
+  let amethystColors = [p.color(75,37,106), p.color(108,52,131), p.color(142,68,173), p.color(165,105,189)];
+  let galaxyNames = ['Andromeda', 'Sombrero', 'Whirlpool', 'Pinwheel', 'Messier 87', 'Centaurus A', 'Black Eye', 'Sunflower', 'Tadpole', 'NGC 1300', 'NGC 6744', 'Triangulum', 'Cigar', 'Sculptor', 'NGC 3628', 'NGC 7331'];
+  let dragging = null, dragOffset = {x:0, y:0};
+  function makeGalaxy(x, y) {
+    let cidx = Math.floor(p.random(amethystColors.length));
+    let name = galaxyNames[Math.floor(p.random(galaxyNames.length))];
+    let arms = Math.floor(p.random(2, 6));
+    let core = p.random(8, 18);
+    let armLen = p.random(16, 32);
+    let armSpread = p.random(0.7, 2.2);
+    let elliptical = p.random(0.7, 1.3);
+    let orientation = p.random(p.TWO_PI);
+    return {
+      x, y, color: amethystColors[cidx], name,
+      angle: p.random(p.TWO_PI), drift: p.random(-0.2,0.2),
+      arms, core, armLen, armSpread, elliptical, orientation
+    };
   }
-  let circles=[];
   p.setup=()=>{
     let c=p.createCanvas(620,320);
     c.parent('canvasContainer1');
-    circles.push(new Circle(50,p.height/3,50,2));
-    circles.push(new Circle(150,p.height/2,70,1.5));
-    circles.push(new Circle(250,(2*p.height)/3,90,1));
+    p.colorMode(p.RGB,255);
+    p.background(255);
+    // Add one galaxy for each unique name
+    let usedColors = [...amethystColors];
+    for(let i=0;i<galaxyNames.length;i++){
+      let x = p.random(80,p.width-80);
+      let y = p.random(60,p.height-60);
+      // Cycle through colors if more names than colors
+      let color = usedColors[i % usedColors.length];
+      galaxies.push({
+        ...makeGalaxy(x, y),
+        name: galaxyNames[i],
+        color: color
+      });
+    }
   };
   p.draw=()=>{
     p.background(255);
-    circles.forEach(c=>{c.move();c.display();});
+    // Draw faint stars
+    for(let i=0;i<40;i++){
+      p.fill(200,180,255,60);
+      p.noStroke();
+      p.ellipse((i*37)%p.width, (i*83)%p.height, 1.5+p.noise(i)*1.5);
+    }
+    // Draw galaxies
+    galaxies.forEach(gal=>{
+      gal.x += gal.drift;
+      if(gal.x<0) gal.x+=p.width;
+      if(gal.x>p.width) gal.x-=p.width;
+      p.push();
+      p.translate(gal.x,gal.y);
+      p.rotate(gal.angle+=0.002);
+      p.rotate(gal.orientation);
+      for(let a=0;a<gal.arms;a++){
+        let armAngle = p.TWO_PI*a/gal.arms;
+        for(let t=0;t<1;t+=0.09){
+          let theta = armAngle + gal.armSpread*t + 0.5*t*t;
+          let r = gal.armLen*t + 8*p.sin(gal.angle*2+t*3);
+          let x = r*Math.cos(theta)*gal.elliptical;
+          let y = r*Math.sin(theta)/gal.elliptical;
+          p.noStroke();
+          p.fill(gal.color.levels[0],gal.color.levels[1],gal.color.levels[2], 70);
+          p.ellipse(x,y,6+3*(1-t),2.5+2*(1-t));
+        }
+      }
+      // Core
+      p.noStroke();
+      p.fill(gal.color);
+      p.ellipse(0,0,gal.core,gal.core*gal.elliptical);
+      p.pop();
+      // Name label
+      p.noStroke();
+      p.fill(60,40,90,220);
+      p.textSize(13);
+      p.textAlign(p.CENTER);
+      p.text(gal.name, gal.x, gal.y+28);
+    });
+  };
+  p.mousePressed=()=>{
+    // Try to drag nearest galaxy
+    let minD = 9999, nearest = null;
+    galaxies.forEach(gal=>{
+      let d = p.dist(p.mouseX,p.mouseY,gal.x,gal.y);
+      if(d<28 && d<minD){ minD = d; nearest = gal; }
+    });
+    if(nearest){
+      dragging = nearest;
+      dragOffset.x = p.mouseX-nearest.x;
+      dragOffset.y = p.mouseY-nearest.y;
+    }
+  };
+  p.mouseDragged=()=>{
+    if(dragging){
+      dragging.x = p.mouseX-dragOffset.x;
+      dragging.y = p.mouseY-dragOffset.y;
+    }
+  };
+  p.mouseReleased=()=>{
+    dragging = null;
   };
 });
 </script>
 
-<!-- p5.js Sketch 2 -->
+<!-- p5.js Sketch 2: Amethyst Orbs and Sparkles -->
 <script>
 new p5(p=>{
-  class Star{
-    constructor(x,y,s){
-      this.x=x;this.y=y;this.s=s;
-      this.b=p.random(100,255);
-      this.bc=p.random(1,3);
-    }
-    twinkle(){
-      this.b+=this.bc;
-      if(this.b>255||this.b<100)this.bc*=-1;
-    }
-    display(){
-      p.fill(90,30,150,this.b);
-      p.noStroke();
-      p.ellipse(this.x,this.y,this.s);
-    }
-  }
-  let stars=[];
+  let orbs = [], sparkles = [];
+  let amethystColors = [p.color(75,37,106), p.color(108,52,131), p.color(142,68,173), p.color(165,105,189)];
+  let dragging = null, dragOffset = {x:0, y:0};
   p.setup=()=>{
     let c=p.createCanvas(620,320);
     c.parent('canvasContainer2');
-    for(let i=0;i<60;i++)
-      stars.push(new Star(p.random(p.width),p.random(p.height),p.random(5,15)));
+    p.colorMode(p.RGB,255);
+    p.background(255);
+    for(let i=0;i<8;i++){
+      let x = p.random(80,p.width-80);
+      let y = p.random(60,p.height-60);
+      let r = p.random(38,80);
+      let cidx = Math.floor(p.random(amethystColors.length));
+      orbs.push({x,y,r,pulse:p.random(0,Math.PI*2),color:amethystColors[cidx],hover:false,pulseClick:0});
+    }
+    for(let i=0;i<36;i++){
+      sparkles.push({
+        x:p.random(p.width),
+        y:p.random(p.height),
+        size:p.random(1,3),
+        alpha:p.random(60,180),
+        pulse:p.random(0,Math.PI*2),
+        color:amethystColors[Math.floor(p.random(amethystColors.length))]
+      });
+    }
   };
   p.draw=()=>{
     p.background(255);
-    stars.forEach(s=>{s.twinkle();s.display();});
+    // Floating orbs
+    orbs.forEach((o, idx)=>{
+      // Hover detection
+      let d = p.dist(p.mouseX, p.mouseY, o.x, o.y);
+      o.hover = d < o.r*0.6;
+      o.pulse += 0.015;
+      if(o.pulseClick>0) o.pulseClick -= 0.04;
+      let pulseR = o.r * (0.92 + 0.08*p.sin(o.pulse) + (o.hover?0.13:0) + (o.pulseClick>0?0.22*p.sin(o.pulseClick*8):0));
+      let glowAlpha = o.hover ? 28 : 12;
+      p.push();
+      p.translate(o.x, o.y + 10*p.sin(o.pulse*0.7));
+      // Outer glow
+      for(let i=7;i>0;i--){
+        p.noStroke();
+        p.fill(o.color.levels[0],o.color.levels[1],o.color.levels[2], glowAlpha+i*7);
+        p.ellipse(0,0,pulseR*i*0.18);
+      }
+      // Main orb
+      p.noStroke();
+      p.fill(o.color.levels[0],o.color.levels[1],o.color.levels[2], 120);
+      p.ellipse(0,0,pulseR);
+      // Inner highlight
+      p.fill(255,180);
+      p.ellipse(0,0,pulseR*0.28, pulseR*0.18);
+      p.pop();
+    });
+    // Sparkles
+    sparkles.forEach(s=>{
+      s.pulse += 0.03;
+      let a = s.alpha + 40*p.sin(s.pulse);
+      p.fill(s.color.levels[0],s.color.levels[1],s.color.levels[2], a);
+      p.noStroke();
+      p.ellipse(s.x, s.y, s.size);
+    });
+    // Extra sparkles on click
+    orbs.forEach(o=>{
+      if(o.pulseClick>0.7){
+        for(let i=0;i<3;i++){
+          let angle = p.random(p.TWO_PI);
+          let dist = o.r*0.7 + p.random(10,30);
+          let sx = o.x + Math.cos(angle)*dist;
+          let sy = o.y + Math.sin(angle)*dist;
+          sparkles.push({
+            x:sx,
+            y:sy,
+            size:p.random(1,3),
+            alpha:p.random(80,180),
+            pulse:p.random(0,Math.PI*2),
+            color:o.color
+          });
+        }
+      }
+    });
+    // Limit sparkles
+    if(sparkles.length>60) sparkles.splice(0,sparkles.length-60);
+  };
+  p.mousePressed=()=>{
+    for(let i=orbs.length-1;i>=0;i--){
+      let o=orbs[i];
+      if(p.dist(p.mouseX,p.mouseY,o.x,o.y)<o.r*0.6){
+        dragging = o;
+        dragOffset.x = p.mouseX-o.x;
+        dragOffset.y = p.mouseY-o.y;
+        // Pulse on click
+        o.pulseClick = 1;
+        break;
+      }
+    }
+  };
+  p.mouseDragged=()=>{
+    if(dragging){
+      dragging.x = p.mouseX-dragOffset.x;
+      dragging.y = p.mouseY-dragOffset.y;
+    }
+  };
+  p.mouseReleased=()=>{
+    dragging = null;
   };
 });
 </script>
 
-<!-- Three.js Sketch 3 -->
+<!-- Three.js Sketch 3: Amethyst Crystal Cluster -->
 <script>
 (function(){
-  const scene=new THREE.Scene();
-  const camera=new THREE.PerspectiveCamera(75,620/320,0.1,1000);
-  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
-  renderer.setSize(620,320);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(75, 620/320, 0.1, 1000);
+  const renderer = new THREE.WebGLRenderer({antialias: true, alpha: true});
+  renderer.setSize(620, 320);
+  renderer.setClearColor(0x000000, 0);
   document.getElementById('canvasContainer3').appendChild(renderer.domElement);
 
-  const geometry=new THREE.TorusKnotGeometry(1,0.3,100,16);
-  const material=new THREE.MeshStandardMaterial({color:0x7F3FBF,metalness:0.6,roughness:0.4});
-  const mesh=new THREE.Mesh(geometry,material);
-  scene.add(mesh);
+  // Create amethyst crystal cluster
+  const crystalGroup = new THREE.Group();
+  
+  // Different crystal geometries
+  const geometries = [
+    new THREE.OctahedronGeometry(0.8, 0),
+    new THREE.TetrahedronGeometry(0.6, 0),
+    new THREE.IcosahedronGeometry(0.7, 0),
+    new THREE.DodecahedronGeometry(0.5, 0)
+  ];
+  
+  // Amethyst material with enhanced properties
+  const amethystMaterial = new THREE.MeshStandardMaterial({
+    color: 0x9F5FFF,
+    metalness: 0.3,
+    roughness: 0.4,
+    transparent: true,
+    opacity: 0.9,
+    emissive: 0x2D1B69,
+    emissiveIntensity: 0.2
+  });
+  
+  // Create multiple crystals
+  for(let i = 0; i < 24; i++) {
+    const geometry = geometries[Math.floor(Math.random() * geometries.length)];
+    const crystal = new THREE.Mesh(geometry, amethystMaterial.clone());
+    
+    // Random positioning
+    crystal.position.set(
+      (Math.random() - 0.5) * 12,
+      (Math.random() - 0.5) * 8,
+      (Math.random() - 0.5) * 12
+    );
+    
+    // Random rotation
+    crystal.rotation.set(
+      Math.random() * Math.PI,
+      Math.random() * Math.PI,
+      Math.random() * Math.PI
+    );
+    
+    // Random scale
+    const scale = 0.5 + Math.random() * 0.8;
+    crystal.scale.set(scale, scale, scale);
+    
+    // Add highlight state
+    crystal.userData = { pulse: 0, highlight: false };
+    
+    crystalGroup.add(crystal);
+  }
+  
+  scene.add(crystalGroup);
 
-  const light=new THREE.PointLight(0xffffff,1);
-  light.position.set(5,5,5);
-  scene.add(light);
-  camera.position.z=5;
+  // Enhanced lighting for amethyst effect
+  const ambientLight = new THREE.AmbientLight(0x8844ff, 0.4);
+  scene.add(ambientLight);
+  
+  const pointLight1 = new THREE.PointLight(0xcc88ff, 1.2);
+  pointLight1.position.set(5, 5, 5);
+  scene.add(pointLight1);
+  
+  const pointLight2 = new THREE.PointLight(0x9F5FFF, 0.8);
+  pointLight2.position.set(-5, -3, 3);
+  scene.add(pointLight2);
+  
+  // Add subtle purple glow
+  const pointLight3 = new THREE.PointLight(0xD9B3FF, 0.6);
+  pointLight3.position.set(0, 8, 0);
+  scene.add(pointLight3);
+
+  camera.position.z = 8;
+
+  // Animation variables
+  let time = 0;
+  const crystals = crystalGroup.children;
+
+  // --- INTERACTIVITY ---
+  let isDragging = false;
+  let lastMouse = { x: 0, y: 0 };
+  let rotation = { x: 0, y: 0 };
+  let targetRotation = { x: 0, y: 0 };
+
+  renderer.domElement.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    lastMouse.x = e.clientX;
+    lastMouse.y = e.clientY;
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - lastMouse.x;
+    const dy = e.clientY - lastMouse.y;
+    targetRotation.y += dx * 0.01;
+    targetRotation.x += dy * 0.01;
+    lastMouse.x = e.clientX;
+    lastMouse.y = e.clientY;
+  });
+  window.addEventListener('mouseup', () => { isDragging = false; });
+
+  // Touch support
+  renderer.domElement.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      isDragging = true;
+      lastMouse.x = e.touches[0].clientX;
+      lastMouse.y = e.touches[0].clientY;
+    }
+  });
+  renderer.domElement.addEventListener('touchmove', (e) => {
+    if (!isDragging || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - lastMouse.x;
+    const dy = e.touches[0].clientY - lastMouse.y;
+    targetRotation.y += dx * 0.01;
+    targetRotation.x += dy * 0.01;
+    lastMouse.x = e.touches[0].clientX;
+    lastMouse.y = e.touches[0].clientY;
+  });
+  window.addEventListener('touchend', () => { isDragging = false; });
+
+  // Raycaster for hover/click highlight
+  const raycaster = new THREE.Raycaster();
+  const mouse = new THREE.Vector2();
+  renderer.domElement.addEventListener('mousemove', (event) => {
+    const rect = renderer.domElement.getBoundingClientRect();
+    mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+  });
+  renderer.domElement.addEventListener('click', () => {
+    raycaster.setFromCamera(mouse, camera);
+    const intersects = raycaster.intersectObjects(crystals);
+    if (intersects.length > 0) {
+      const crystal = intersects[0].object;
+      crystal.userData.highlight = true;
+      setTimeout(() => { crystal.userData.highlight = false; }, 600);
+    }
+  });
 
   function animate(){
     requestAnimationFrame(animate);
-    mesh.rotation.x+=0.01;
-    mesh.rotation.y+=0.01;
-    renderer.render(scene,camera);
+    time += 0.01;
+    
+    // Smoothly interpolate rotation
+    rotation.x += (targetRotation.x - rotation.x) * 0.1;
+    rotation.y += (targetRotation.y - rotation.y) * 0.1;
+    crystalGroup.rotation.x = rotation.x;
+    crystalGroup.rotation.y = rotation.y;
+    
+    // Individual crystal animations
+    crystals.forEach((crystal, index) => {
+      // Gentle floating motion
+      crystal.position.y += Math.sin(time + index) * 0.002;
+      
+      // Subtle rotation
+      crystal.rotation.x += 0.01;
+      crystal.rotation.y += 0.008;
+      
+      // Pulsing effect
+      let pulse = 1 + Math.sin(time * 2 + index) * 0.1;
+      // If highlighted, pulse more
+      if (crystal.userData.highlight) {
+        crystal.userData.pulse += 0.3;
+        pulse = 1.2 + Math.abs(Math.sin(crystal.userData.pulse)) * 0.4;
+        crystal.material.emissiveIntensity = 0.5;
+      } else {
+        crystal.userData.pulse = 0;
+        crystal.material.emissiveIntensity = 0.1 + Math.sin(time + index) * 0.1;
+      }
+      crystal.scale.setScalar(pulse);
+    });
+    
+    // Orbiting lights
+    pointLight1.position.x = Math.cos(time * 0.5) * 6;
+    pointLight1.position.z = Math.sin(time * 0.5) * 6;
+    
+    pointLight2.position.x = Math.cos(time * 0.3 + Math.PI) * 4;
+    pointLight2.position.z = Math.sin(time * 0.3 + Math.PI) * 4;
+    
+    renderer.render(scene, camera);
   }
   animate();
 })();
 </script>
 
-<!-- Three.js Sketch 4 -->
+<!-- Three.js Sketch 4: Interactive Amethyst Portal -->
 <script>
-// Canvas 4: Large amethysts with gentle mouse movement and slow floating, no auto rotation
+// Canvas 4: Interactive amethyst portal with enhanced visual effects
 (function(){
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(75, 620/320, 0.1, 1000);
   const renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
-  renderer.setSize(620,320);
-  document.getElementById('canvasContainer4').appendChild(renderer.domElement);
+  // Responsive full container
+  const container = document.getElementById('canvasContainer4');
+  function resizeRenderer() {
+    const w = container.offsetWidth;
+    const h = container.offsetHeight;
+    renderer.setSize(w, h);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  renderer.setClearColor(0xffffff, 1);
+  container.appendChild(renderer.domElement);
+  resizeRenderer();
+  window.addEventListener('resize', resizeRenderer);
 
-  // Create amethyst-like icosahedron cluster
-  const geometry = new THREE.IcosahedronGeometry(1.3, 0);
-  const material = new THREE.MeshStandardMaterial({
+  // Create amethyst portal geometry
+  const portalGeometry = new THREE.IcosahedronGeometry(2.5, 2);
+  const portalMaterial = new THREE.MeshStandardMaterial({
     color: 0x9F5FFF,
     flatShading: true,
-    metalness: 0.3,
-    roughness: 0.6,
+    metalness: 0.55,
+    roughness: 0.09,
+    transparent: false,
+    opacity: 1,
+    emissive: 0x2D1B69,
+    emissiveIntensity: 0.45
   });
+  const portal = new THREE.Mesh(portalGeometry, portalMaterial);
+  scene.add(portal);
 
-  const cluster = new THREE.Group();
-  const count = 25;
-  for(let i = 0; i < count; i++){
-    let mesh = new THREE.Mesh(geometry, material);
-    mesh.position.set(
-      (Math.random() - 0.5) * 12,
-      (Math.random() - 0.5) * 8,
-      (Math.random() - 0.5) * 10
+  // Create floating amethyst particles around portal
+  const particleGroup = new THREE.Group();
+  const particleCount = 80;
+  for(let i = 0; i < particleCount; i++){
+    const particleGeometry = new THREE.SphereGeometry(0.1 + Math.random() * 0.2, 8, 8);
+    const particleMaterial = new THREE.MeshStandardMaterial({
+      color: 0xCC88FF,
+      transparent: true,
+      opacity: 0.7,
+      emissive: 0x9F5FFF,
+      emissiveIntensity: 0.5
+    });
+    
+    const particle = new THREE.Mesh(particleGeometry, particleMaterial);
+    
+    // Position particles in a sphere around the portal
+    const radius = 3 + Math.random() * 2;
+    const theta = Math.random() * Math.PI * 2;
+    const phi = Math.acos(Math.random() * 2 - 1);
+    
+    particle.position.set(
+      radius * Math.sin(phi) * Math.cos(theta),
+      radius * Math.sin(phi) * Math.sin(theta),
+      radius * Math.cos(phi)
     );
-    mesh.rotation.set(
-      Math.random() * Math.PI,
-      Math.random() * Math.PI,
-      Math.random() * Math.PI
-    );
-    let scale = 1 + Math.random() * 0.7;
-    mesh.scale.set(scale, scale, scale);
-    cluster.add(mesh);
+    
+    particle.userData = {
+      originalPosition: particle.position.clone(),
+      speed: 0.01 + Math.random() * 0.02,
+      angle: Math.random() * Math.PI * 2
+    };
+    
+    particleGroup.add(particle);
   }
-  scene.add(cluster);
+  scene.add(particleGroup);
 
-  // Lighting
-  const light = new THREE.PointLight(0xffffff, 1);
-  light.position.set(5,5,5);
-  scene.add(light);
+  // Add starfield background
+  const starGeometry = new THREE.BufferGeometry();
+  const starCount = 120;
+  const starPositions = [];
+  const starColors = [];
+  for(let i=0;i<starCount;i++){
+    const r = 18 + Math.random()*8;
+    const theta = Math.random()*Math.PI*2;
+    const phi = Math.acos(Math.random()*2-1);
+    starPositions.push(
+      r*Math.sin(phi)*Math.cos(theta),
+      r*Math.sin(phi)*Math.sin(theta),
+      r*Math.cos(phi)
+    );
+    // Subtle amethyst glow
+    starColors.push(0.7+Math.random()*0.2, 0.6+Math.random()*0.2, 1);
+  }
+  starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starPositions, 3));
+  starGeometry.setAttribute('color', new THREE.Float32BufferAttribute(starColors, 3));
+  const starMaterial = new THREE.PointsMaterial({size:0.18, vertexColors:true, opacity:0.7, transparent:true});
+  const starField = new THREE.Points(starGeometry, starMaterial);
+  scene.add(starField);
+
+  // Enhanced lighting system
   const ambientLight = new THREE.AmbientLight(0x8844ff, 0.3);
   scene.add(ambientLight);
+  
+  const pointLight1 = new THREE.PointLight(0xcc88ff, 1.5);
+  pointLight1.position.set(5, 5, 5);
+  scene.add(pointLight1);
+  
+  const pointLight2 = new THREE.PointLight(0x9F5FFF, 1.0);
+  pointLight2.position.set(-5, -3, 3);
+  scene.add(pointLight2);
+  
+  const pointLight3 = new THREE.PointLight(0xD9B3FF, 0.8);
+  pointLight3.position.set(0, 8, 0);
+  scene.add(pointLight3);
 
   camera.position.z = 10;
 
-  // Smooth mouse movement targets
+  // Interactive variables
   let targetX = 0, targetY = 0;
   let currentX = 0, currentY = 0;
+  let mouseInfluence = 0;
+  let portalPulse = 0;
 
-  // Zoom state and smooth zooming
-  let zoomedIn = false;
-  const zoomTargetZ = 5;
-  const zoomNormalZ = 10;
-  let currentCameraZ = zoomNormalZ;
-  const zoomSpeed = 0.08;
 
-  // Rotation velocity for smooth dragging
-  let rotation = { x: 0, y: 0 };
-  let rotationVelocity = { x: 0, y: 0 };
+  // OrbitControls-like interactivity
+  let controls = {
+    isDragging: false,
+    last: {x:0, y:0},
+    rotation: {x:0, y:0},
+    targetRotation: {x:0, y:0},
+    zoom: 10
+  };
+  renderer.domElement.addEventListener('mousedown', (e) => {
+    controls.isDragging = true;
+    controls.last.x = e.clientX;
+    controls.last.y = e.clientY;
+  });
+  window.addEventListener('mousemove', (e) => {
+    if (!controls.isDragging) return;
+    const dx = e.clientX - controls.last.x;
+    const dy = e.clientY - controls.last.y;
+    controls.targetRotation.y += dx * 0.01;
+    controls.targetRotation.x += dy * 0.01;
+    controls.last.x = e.clientX;
+    controls.last.y = e.clientY;
+  });
+  window.addEventListener('mouseup', () => { controls.isDragging = false; });
+  renderer.domElement.addEventListener('wheel', (e) => {
+    controls.zoom += e.deltaY * 0.01;
+    controls.zoom = Math.max(4, Math.min(controls.zoom, 30));
+    camera.position.z = controls.zoom;
+  });
+  // Touch support
+  renderer.domElement.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 1) {
+      controls.isDragging = true;
+      controls.last.x = e.touches[0].clientX;
+      controls.last.y = e.touches[0].clientY;
+    }
+  });
+  renderer.domElement.addEventListener('touchmove', (e) => {
+    if (!controls.isDragging || e.touches.length !== 1) return;
+    const dx = e.touches[0].clientX - controls.last.x;
+    const dy = e.touches[0].clientY - controls.last.y;
+    controls.targetRotation.y += dx * 0.01;
+    controls.targetRotation.x += dy * 0.01;
+    controls.last.x = e.touches[0].clientX;
+    controls.last.y = e.touches[0].clientY;
+  });
+  window.addEventListener('touchend', () => { controls.isDragging = false; });
 
-  // Dragging state
-  let isDragging = false;
-  let previousMouse = { x: 0, y: 0 };
+  // --- Pulse on click ---
+  let pulseActive = false;
+  let pulseTime = 0;
+  renderer.domElement.addEventListener('click', () => {
+    pulseActive = true;
+    pulseTime = 0;
+  });
 
-  // Mouse move handler
+  // Mouse interaction (existing)
   document.getElementById('canvasContainer4').addEventListener('mousemove', (event) => {
     const rect = renderer.domElement.getBoundingClientRect();
     const mouseX = ((event.clientX - rect.left) / rect.width) * 2 - 1;
     const mouseY = -(((event.clientY - rect.top) / rect.height) * 2 - 1);
 
-    if (!zoomedIn) {
-      targetX = mouseX;
-      targetY = mouseY;
-    } else if (isDragging) {
-      const deltaX = event.clientX - previousMouse.x;
-      const deltaY = event.clientY - previousMouse.y;
-
-      // Update rotation velocity with smoothing
-      rotationVelocity.y += deltaX * 0.0025;
-      rotationVelocity.x += deltaY * 0.0025;
-
-      previousMouse = { x: event.clientX, y: event.clientY };
-    }
+    targetX = mouseX;
+    targetY = mouseY;
+    mouseInfluence = 1;
   });
 
-  // Mouse down to start drag
-  document.getElementById('canvasContainer4').addEventListener('mousedown', (event) => {
-    if (zoomedIn) {
-      isDragging = true;
-      previousMouse = { x: event.clientX, y: event.clientY };
-    }
-  });
-
-  // Mouse up to stop drag
-  document.addEventListener('mouseup', () => {
-    isDragging = false;
-  });
-
-  // Click toggles zoom
-  document.getElementById('canvasContainer4').addEventListener('click', () => {
-    zoomedIn = !zoomedIn;
+  document.getElementById('canvasContainer4').addEventListener('mouseleave', () => {
+    mouseInfluence = 0;
   });
 
   const clock = new THREE.Clock();
@@ -429,54 +942,87 @@ new p5(p=>{
     requestAnimationFrame(animate);
     const elapsed = clock.getElapsedTime();
 
-    // Smooth lerp mouse movement (zoomed out)
-    if (!zoomedIn) {
-      currentX += (targetX - currentX) * 0.1;
-      currentY += (targetY - currentY) * 0.1;
+    // Responsive
+    resizeRenderer();
+
+    // Smooth mouse influence
+    currentX += (targetX - currentX) * 0.1;
+    currentY += (targetY - currentY) * 0.1;
+    mouseInfluence += (0 - mouseInfluence) * 0.05;
+
+    // --- OrbitControls-like rotation ---
+    controls.rotation.x += (controls.targetRotation.x - controls.rotation.x) * 0.1;
+    controls.rotation.y += (controls.targetRotation.y - controls.rotation.y) * 0.1;
+    portal.rotation.x = controls.rotation.x;
+    portal.rotation.y = controls.rotation.y;
+
+    // Portal animations
+    portal.rotation.x += 0.01;
+    portal.rotation.y += 0.015;
+    
+    // Pulsing effect
+    portalPulse += 0.05;
+    let pulseScale = 1 + Math.sin(portalPulse) * 0.1;
+    let colorShift = 0;
+    // Dramatic pulse on click
+    if (pulseActive) {
+      pulseTime += 0.08;
+      pulseScale = 1.3 + Math.abs(Math.sin(pulseTime)) * 0.5;
+      colorShift = Math.sin(pulseTime) * 0.2;
+      if (pulseTime > Math.PI) pulseActive = false;
     }
+    portal.scale.setScalar(pulseScale);
+    
+    // Dynamic material properties
+    portal.material.emissiveIntensity = 0.2 + Math.sin(portalPulse * 2) * 0.1 + colorShift * 2;
+    portal.material.opacity = 0.8 + Math.sin(portalPulse * 1.5) * 0.1;
+    portal.material.color.setHSL(0.77 + colorShift, 0.6, 0.7);
 
-    // Smooth zoom
-    currentCameraZ += (zoomedIn ? zoomTargetZ : zoomNormalZ - currentCameraZ) * zoomSpeed;
-    camera.position.z = currentCameraZ;
-
-    // Floating effect
-    cluster.position.y = 0.4 * Math.sin(elapsed * 1.2);
-
-    if (!zoomedIn) {
-      // Slight cluster position movement
-      cluster.position.x = currentX * 5;
-      cluster.position.z = currentY * 5;
-
-      // Decay rotation velocity smoothly to zero
-      rotationVelocity.x *= 0.9;
-      rotationVelocity.y *= 0.9;
-
-      // Apply rotation velocity to rotation
-      rotation.x += rotationVelocity.x;
-      rotation.y += rotationVelocity.y;
-
-      // Slowly bring rotation back to zero
-      rotation.x += (0 - rotation.x) * 0.05;
-      rotation.y += (0 - rotation.y) * 0.05;
+    // Mouse influence on portal
+    if (mouseInfluence > 0.1) {
+      portal.position.x = currentX * 2;
+      portal.position.y = currentY * 1.5;
+      portal.material.emissiveIntensity = 0.4 + colorShift * 2;
     } else {
-      // When zoomed in and not dragging, apply damping to rotation velocity
-      if (!isDragging) {
-        rotationVelocity.x *= 0.92;
-        rotationVelocity.y *= 0.92;
-        rotation.x += rotationVelocity.x;
-        rotation.y += rotationVelocity.y;
-      }
+      portal.position.x += (0 - portal.position.x) * 0.05;
+      portal.position.y += (0 - portal.position.y) * 0.05;
     }
 
-    // Apply rotation
-    cluster.rotation.x = rotation.x;
-    cluster.rotation.y = rotation.y;
+    // Animate particles
+    particleGroup.children.forEach((particle, index) => {
+      const data = particle.userData;
+      
+      // Orbital motion
+      data.angle += data.speed;
+      const radius = 3 + Math.sin(elapsed + index) * 0.5;
+      
+      particle.position.x = data.originalPosition.x + Math.cos(data.angle) * 0.5;
+      particle.position.y = data.originalPosition.y + Math.sin(data.angle) * 0.5;
+      particle.position.z = data.originalPosition.z + Math.sin(data.angle * 0.5) * 0.3;
+      
+      // Pulsing particles
+      const particlePulse = 1 + Math.sin(elapsed * 2 + index) * 0.3;
+      particle.scale.setScalar(particlePulse);
+      
+      // Dynamic opacity
+      particle.material.opacity = 0.5 + Math.sin(elapsed + index) * 0.3;
+      particle.material.emissiveIntensity = 0.3 + Math.sin(elapsed * 1.5 + index) * 0.2;
+    });
+
+    // Orbiting lights
+    pointLight1.position.x = Math.cos(elapsed * 0.3) * 6;
+    pointLight1.position.z = Math.sin(elapsed * 0.3) * 6;
+    
+    pointLight2.position.x = Math.cos(elapsed * 0.2 + Math.PI) * 4;
+    pointLight2.position.z = Math.sin(elapsed * 0.2 + Math.PI) * 4;
+    
+    pointLight3.position.y = 6 + Math.sin(elapsed * 0.4) * 2;
 
     renderer.render(scene, camera);
   }
   animate();
 })();
-  </script>
+</script>
   
 <!-- D3.js Timeline -->
 <script>
@@ -500,6 +1046,7 @@ const dataModern = [
 ];
 
 const tooltip = d3.select("#tooltip")
+  .attr("class", "tooltip")
   .style("max-width", "240px")
   .style("word-wrap", "break-word")
   .style("white-space", "normal");
@@ -559,7 +1106,11 @@ function createTimeline(containerId, data, isOld) {
     .on("mouseover", function(event, d) {
       tooltip
         .style("opacity", 1)
-        .html(`<div style="max-width:240px;">${d.desc}</div>`);
+        .style("font-family", "Roboto, sans-serif")
+        .style("font-size", "15px")
+        .style("text-transform", "none")
+        .style("letter-spacing", "normal")
+        .html(`<div>${d.desc}</div>`);
       d3.select(this).select("circle").attr("stroke", "#ffccff").attr("stroke-width", 4);
     })
     .on("mousemove", function(event, d) {
@@ -898,6 +1449,152 @@ createTimeline("#timeline-wrapper-modern", dataModern, false);
     clearScene();
     scene.add(explanationObjects[nodeId]);
   }
+})();
+</script>
+
+<!-- Manhattan Neighborhoods Map Section -->
+<section id="manhattan-section" style="margin-top:80px; max-width:1300px; margin-left:auto; margin-right:auto;">
+  <h2 style="text-align:center; color:#cc88ff;">Manhattan Neighborhoods</h2>
+  <p style="color:#cc88ff; font-size:16px; max-width:650px; margin:0 auto 40px auto; line-height:1.4; text-align:left;">
+    Explore Manhattan's diverse neighborhoods. Hover over each area to see the neighborhood name.<br/>
+    Use mouse wheel to zoom and drag to pan around the map.
+  </p>
+
+  <svg id="manhattan-svg" style="width: 600px; height: 500px; display: block; margin: 0 auto;"></svg>
+  <div class="tooltip" id="tooltip"></div>
+</section>
+
+<script>
+// Manhattan Neighborhoods Map
+(() => {
+  const manhattanWidth = 600;
+  const manhattanHeight = 500;
+
+  const manhattanSvg = d3.select("#manhattan-svg");
+  const manhattanG = manhattanSvg.append("g");
+  const manhattanTooltip = d3.select("#tooltip").attr("class", "tooltip-manhattan");
+
+  const manhattanProjection = d3.geoMercator().scale(1).translate([0, 0]);
+  const manhattanPath = d3.geoPath().projection(manhattanProjection);
+
+  d3.json("manhattan.geojson").then(data => {
+    // Add galaxy gradient definitions
+    const defs = manhattanSvg.append("defs");
+    
+    // Normal galaxy gradient
+    const galaxyGrad = defs.append("radialGradient")
+      .attr("id", "galaxyGradient")
+      .attr("cx", "50%")
+      .attr("cy", "50%")
+      .attr("r", "70%");
+    galaxyGrad.append("stop").attr("offset", "0%").attr("stop-color", "#9b59b6").attr("stop-opacity", "0.8");
+    galaxyGrad.append("stop").attr("offset", "50%").attr("stop-color", "#8e44ad").attr("stop-opacity", "0.9");
+    galaxyGrad.append("stop").attr("offset", "100%").attr("stop-color", "#6c3483").attr("stop-opacity", "0.7");
+    
+    // Hover galaxy gradient
+    const galaxyGradHover = defs.append("radialGradient")
+      .attr("id", "galaxyGradientHover")
+      .attr("cx", "50%")
+      .attr("cy", "50%")
+      .attr("r", "70%");
+    galaxyGradHover.append("stop").attr("offset", "0%").attr("stop-color", "#e8d5ff").attr("stop-opacity", "0.9");
+    galaxyGradHover.append("stop").attr("offset", "50%").attr("stop-color", "#9b59b6").attr("stop-opacity", "1");
+    galaxyGradHover.append("stop").attr("offset", "100%").attr("stop-color", "#8e44ad").attr("stop-opacity", "0.8");
+    
+    // Add animated stars background
+    const stars = manhattanSvg.append("g").attr("class", "stars");
+    for (let i = 0; i < 35; i++) {
+      const star = stars.append("g")
+        .attr("class", "star-group")
+        .attr("transform", `translate(${Math.random() * manhattanWidth}, ${Math.random() * manhattanHeight})`);
+      
+      // Add tech cross for all stars
+      star.append("line")
+        .attr("x1", -4)
+        .attr("y1", 0)
+        .attr("x2", 4)
+        .attr("y2", 0)
+        .attr("stroke", "#ffffff")
+        .attr("stroke-width", 1.5)
+        .attr("opacity", 0.7)
+        .attr("class", "tech-cross");
+      
+      star.append("line")
+        .attr("x1", 0)
+        .attr("y1", -4)
+        .attr("x2", 0)
+        .attr("y2", 4)
+        .attr("stroke", "#ffffff")
+        .attr("stroke-width", 1.5)
+        .attr("opacity", 0.7)
+        .attr("class", "tech-cross");
+    }
+    
+    // Add tech data nodes
+    const techNodes = manhattanSvg.append("g").attr("class", "tech-nodes");
+    for (let i = 0; i < 20; i++) {
+      const node = techNodes.append("g")
+        .attr("class", "tech-node")
+        .attr("transform", `translate(${Math.random() * manhattanWidth}, ${Math.random() * manhattanHeight})`);
+      
+      node.append("rect")
+        .attr("width", 4)
+        .attr("height", 4)
+        .attr("fill", "#9b59b6")
+        .attr("opacity", 0.8);
+      
+      node.append("circle")
+        .attr("r", 8)
+        .attr("fill", "none")
+        .attr("stroke", "#9b59b6")
+        .attr("stroke-width", 1)
+        .attr("opacity", 0.4)
+        .attr("class", "tech-pulse");
+    }
+
+    // Fit projection to the data
+    const bounds = manhattanPath.bounds(data);
+    const dx = bounds[1][0] - bounds[0][0];
+    const dy = bounds[1][1] - bounds[0][1];
+    const x = (bounds[0][0] + bounds[1][0]) / 2;
+    const y = (bounds[0][1] + bounds[1][1]) / 2;
+    const scale = 0.95 / Math.max(dx / manhattanWidth, dy / manhattanHeight);
+    const translate = [manhattanWidth / 2 - scale * x, manhattanHeight / 2 - scale * y];
+    manhattanProjection.scale(scale).translate(translate);
+
+    // Draw neighborhoods as cosmic regions
+    manhattanG.selectAll("path")
+      .data(data.features)
+      .join("path")
+      .attr("class", "neighborhood")
+      .attr("d", manhattanPath)
+      .on("mouseover", (event, d) => {
+        manhattanTooltip
+          .style("opacity", 1)
+          .html(`<strong>${d.properties.name}</strong>`);
+      })
+      .on("mousemove", event => {
+        manhattanTooltip
+          .style("left", (event.pageX + 12) + "px")
+          .style("top", (event.pageY - 28) + "px");
+      })
+      .on("mouseout", () => {
+        manhattanTooltip.style("opacity", 0);
+      });
+
+    // Enable zoom and pan
+    manhattanSvg.call(
+      d3.zoom()
+        .scaleExtent([1, 10])
+        .on("zoom", event => {
+          manhattanG.attr("transform", event.transform);
+          stars.attr("transform", event.transform);
+          techNodes.attr("transform", event.transform);
+        })
+    );
+  }).catch(err => {
+    console.error("Failed to load GeoJSON:", err);
+  });
 })();
 </script>
 
