@@ -16,6 +16,10 @@
 <!-- D3.js -->
 <script src="https://d3js.org/d3.v7.min.js"></script>
 
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
 <style>
 body {
   margin: 0;
@@ -267,6 +271,124 @@ section#timeline-section h2 {
 }
 .axis text {
   fill:#333;
+}
+/* Amethyst Pulse Animation for Poll Buttons */
+.amethyst-pulse {
+  animation: amethystPulse 0.5s;
+}
+@keyframes amethystPulse {
+  0% { box-shadow: 0 0 0 0 #cc88ff88; }
+  70% { box-shadow: 0 0 16px 12px #cc88ff44; }
+  100% { box-shadow: 0 0 0 0 #cc88ff00; }
+}
+.orb-btn {
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  box-shadow: 0 0 24px #cc88ff99, 0 0 2px #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.18s;
+  z-index: 2;
+  background: transparent;
+}
+.orb-btn:active {
+  transform: scale(1.12);
+  box-shadow: 0 0 36px #e8d5ffcc, 0 0 8px #fff;
+}
+.orb-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 6px #9F5FFF;
+  pointer-events: none;
+}
+.amethyst-orb-btn {
+  position: absolute;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  border: none;
+  outline: none;
+  box-shadow: 0 0 24px #cc88ff99, 0 0 2px #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  font-weight: bold;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.18s;
+  z-index: 2;
+  background: transparent;
+}
+.amethyst-orb-btn:active {
+  transform: scale(1.12);
+  box-shadow: 0 0 36px #e8d5ffcc, 0 0 8px #fff;
+}
+.amethyst-orb-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 6px #9F5FFF;
+  pointer-events: none;
+}
+.amethyst-crystal-btn {
+  position: absolute;
+  width: 74px;
+  height: 90px;
+  border: none;
+  outline: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s, box-shadow 0.18s;
+  filter: drop-shadow(0 0 18px #cc88ff99);
+}
+.amethyst-crystal-btn:active {
+  transform: scale(1.08) rotate(-2deg);
+  filter: drop-shadow(0 0 32px #e8d5ffcc);
+}
+.amethyst-crystal-shape {
+  width: 64px;
+  height: 80px;
+  display: block;
+  clip-path: polygon(50% 0%, 90% 20%, 100% 60%, 75% 100%, 25% 100%, 0% 60%, 10% 20%);
+  box-shadow: 0 0 24px #cc88ff55, 0 0 8px #fff2;
+  background: linear-gradient(135deg, var(--crystal1), var(--crystal2) 60%, var(--crystal3));
+  border-radius: 18% 18% 30% 30%/22% 22% 40% 40%;
+  position: relative;
+}
+.amethyst-crystal-shine {
+  position: absolute;
+  left: 18px; top: 12px;
+  width: 18px; height: 28px;
+  background: linear-gradient(120deg, #fff8 60%, #fff0 100%);
+  border-radius: 40% 60% 60% 40%/60% 40% 60% 40%;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.amethyst-crystal-label {
+  position: absolute;
+  left: 50%;
+  top: 92px;
+  transform: translateX(-50%);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 6px #9F5FFF, 0 0 2px #fff;
+  pointer-events: none;
 }
 </style>
 
@@ -1177,7 +1299,7 @@ createTimeline("#timeline-wrapper-modern", dataModern, false);
 <section id="relation-network-section" style="margin-top:80px; max-width:1300px; margin-left:auto; margin-right:auto;">
   <h2 style="text-align:center; color:#cc88ff;">Amethyst Light Emergence Network</h2>
   <p style="color:#cc88ff; font-size:16px; max-width:650px; margin:0 auto 40px auto; line-height:1.4; text-align:left;">
-  Hover over the numbered nodes to reveal detailed explanations of key chemistry and physics concepts involved in amethyst’s coloration.<br/>
+  Hover over the numbered nodes to reveal detailed explanations of key chemistry and physics concepts involved in amethyst's coloration.<br/>
   Arrows illustrate the logical influence and flow between these processes.<br/>
   The 3D visualization on the right dynamically highlights what is going on at each node stage.
   </p>
@@ -1214,8 +1336,6 @@ createTimeline("#timeline-wrapper-modern", dataModern, false);
 
 </section>
 
-<script src="https://d3js.org/d3.v7.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script>
 (() => {
   const width = 600, height = 480;  // EXACTLY container size!
@@ -1230,7 +1350,7 @@ createTimeline("#timeline-wrapper-modern", dataModern, false);
     { id: "Crystal Structure", desc: "The quartz lattice provides the stable framework that hosts impurities influencing optical properties.", color: "#9F5FFF", step: 1 },
     { id: "Iron Impurities", desc: "Iron ions substitute in the crystal lattice creating color centers responsible for purple hues.", color: "#7F3FBF", step: 2 },
     { id: "Radiation Exposure", desc: "Natural radiation alters iron ion states, modifying electron behavior.", color: "#CC88FF", step: 3 },
-    { id: "Electron Transitions", desc: "Physics behind absorption and emission of light causing amethyst’s characteristic color.", color: "#B266FF", step: 4 },
+    { id: "Electron Transitions", desc: "Physics behind absorption and emission of light causing amethyst's characteristic color.", color: "#B266FF", step: 4 },
     { id: "Visible Purple Light", desc: "Resulting purple light perceived by our eyes due to combined effects of all above.", color: "#D9B3FF", step: 5 }
   ];
 
@@ -1596,6 +1716,194 @@ createTimeline("#timeline-wrapper-modern", dataModern, false);
     console.error("Failed to load GeoJSON:", err);
   });
 })();
+</script>
+
+<section id="amethyst-machine" style="margin: 60px auto 0 auto; max-width: 700px; background: transparent; border-radius: 18px; padding: 32px 24px 24px 24px; display: flex; flex-direction: column; align-items: center;">
+  <h2 style="color: #fff; font-weight: 700; font-size: 26px; letter-spacing: 1px; margin-bottom: 18px; text-shadow: 0 0 8px #9F5FFF;">Amethyst Sound Machine</h2>
+  <p style="color: #cc88ff; font-size: 16px; margin-bottom: 18px; text-align: center; max-width: 500px; text-shadow: 0 0 6px #9F5FFF55;">Tap the floating amethyst crystals to play soothing tones. Layer them to create your own soundscape!</p>
+  <div style="width: 100%; display: flex; justify-content: center; margin-bottom: 18px; gap: 16px;">
+    <button id="amethyst-stopall" style="background: linear-gradient(90deg, #6c3483 60%, #9F5FFF 100%); color: #fff; border: none; border-radius: 8px; padding: 10px 22px; font-size: 16px; font-weight: 600; cursor: pointer; box-shadow: 0 0 12px #6c348388, 0 0 2px #fff; text-shadow: 0 0 6px #fff; border-bottom: 2.5px solid #e8d5ff;">Stop All</button>
+  </div>
+  <div id="amethyst-orb-panel" style="position:relative; width: 420px; height: 320px; margin: 0 auto; display: flex; align-items: center; justify-content: center;"></div>
+</section>
+<style>
+.amethyst-crystal-btn {
+  position: absolute;
+  width: 74px;
+  height: 90px;
+  border: none;
+  outline: none;
+  background: transparent;
+  cursor: pointer;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.18s, box-shadow 0.18s;
+  filter: drop-shadow(0 0 18px #cc88ff99);
+}
+.amethyst-crystal-btn:active {
+  transform: scale(1.08) rotate(-2deg);
+  filter: drop-shadow(0 0 32px #e8d5ffcc);
+}
+.amethyst-crystal-shape {
+  width: 64px;
+  height: 80px;
+  display: block;
+  clip-path: polygon(50% 0%, 90% 20%, 100% 60%, 75% 100%, 25% 100%, 0% 60%, 10% 20%);
+  box-shadow: 0 0 24px #cc88ff55, 0 0 8px #fff2;
+  background: linear-gradient(135deg, var(--crystal1), var(--crystal2) 60%, var(--crystal3));
+  border-radius: 18% 18% 30% 30%/22% 22% 40% 40%;
+  position: relative;
+}
+.amethyst-crystal-shine {
+  position: absolute;
+  left: 18px; top: 12px;
+  width: 18px; height: 28px;
+  background: linear-gradient(120deg, #fff8 60%, #fff0 100%);
+  border-radius: 40% 60% 60% 40%/60% 40% 60% 40%;
+  opacity: 0.7;
+  pointer-events: none;
+}
+.amethyst-crystal-label {
+  position: absolute;
+  left: 50%;
+  top: 92px;
+  transform: translateX(-50%);
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  text-shadow: 0 0 6px #9F5FFF, 0 0 2px #fff;
+  pointer-events: none;
+}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+<script>
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyBcaO7nRdBwq4dUrkw-wXMFcKg7wWqHTmk",
+  authDomain: "amethyst-poll.firebaseapp.com",
+  databaseURL: "https://amethyst-poll-default-rtdb.firebaseio.com/",
+  projectId: "amethyst-poll",
+  storageBucket: "amethyst-poll.firebasestorage.app",
+  messagingSenderId: "600506458161",
+  appId: "1:600506458161:web:2c4c96feff0b91aecc7510",
+  measurementId: "G-YXP83H23MW"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+const playCountsRef = db.ref('crystalPlays');
+
+const amethystOrbCount = 8;
+const amethystCrystals = [
+  { c1: '#b399ff', c2: '#9F5FFF', c3: '#6c3483' },
+  { c1: '#e8d5ff', c2: '#cc88ff', c3: '#7d3c98' },
+  { c1: '#d1b3ff', c2: '#B266FF', c3: '#8844ff' },
+  { c1: '#d9b3ff', c2: '#e8d5ff', c3: '#9F5FFF' },
+  { c1: '#b399ff', c2: '#6c3483', c3: '#cc88ff' },
+  { c1: '#e8d5ff', c2: '#D9B3FF', c3: '#7F3FBF' },
+  { c1: '#c299ff', c2: '#7F3FBF', c3: '#b399ff' },
+  { c1: '#b399ff', c2: '#8844ff', c3: '#e8d5ff' }
+];
+const amethystSynthTypes = [
+  'sine', 'amsine', 'sine', 'amsine', 'sine', 'amsine', 'sine', 'amsine'
+];
+const amethystNotes = ['C5','D5','E5','G5','A5','C6','D6','E6'];
+let amethystSynths = [];
+let amethystOrbStates = Array(amethystOrbCount).fill(false);
+let amethystAmbientPad = null;
+let amethystPadStarted = false;
+let amethystPlayCounts = Array(amethystOrbCount).fill(0);
+const amethystCrystalLabels = ['A','M','E','T','H','Y','S','T'];
+
+function setupAmethystMachine() {
+  // Setup synths and ambient pad
+  const limiter = new Tone.Limiter(-18).toDestination();
+  for(let i=0;i<amethystOrbCount;i++) {
+    const synth = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: amethystSynthTypes[i] },
+      envelope: { attack: 1.2, decay: 0.2, sustain: 0.7, release: 3.5 }
+    });
+    const reverb = new Tone.Reverb({ decay: 8, wet: 0.92 }).toDestination();
+    const delay = new Tone.FeedbackDelay({ delayTime: 0.5, feedback: 0.6, wet: 0.6 }).toDestination();
+    const gain = new Tone.Gain(0.08).connect(limiter);
+    synth.connect(reverb);
+    synth.connect(delay);
+    synth.connect(gain);
+    amethystSynths[i] = synth;
+  }
+  amethystAmbientPad = new Tone.PolySynth(Tone.Synth, {
+    oscillator: { type: 'sine' },
+    envelope: { attack: 3, decay: 1, sustain: 0.5, release: 6 }
+  });
+  const padReverb = new Tone.Reverb({ decay: 12, wet: 0.95 }).toDestination();
+  const padGain = new Tone.Gain(0.04).connect(limiter);
+  amethystAmbientPad.connect(padReverb);
+  amethystAmbientPad.connect(padGain);
+
+  // Render crystal buttons in a circle
+  const panel = document.getElementById('amethyst-orb-panel');
+  panel.innerHTML = '';
+  const cx = 210, cy = 160, R = 110;
+  for(let i=0;i<amethystOrbCount;i++) {
+    const angle = (i/amethystOrbCount)*2*Math.PI - Math.PI/2;
+    const x = cx + R*Math.cos(angle) - 37;
+    const y = cy + R*Math.sin(angle) - 45;
+    const btn = document.createElement('button');
+    btn.className = 'amethyst-crystal-btn';
+    btn.style.left = x+'px';
+    btn.style.top = y+'px';
+    btn.innerHTML = `
+      <div class=\"amethyst-crystal-shape\" style=\"--crystal1:${amethystCrystals[i].c1};--crystal2:${amethystCrystals[i].c2};--crystal3:${amethystCrystals[i].c3};\">\n        <div class=\"amethyst-crystal-shine\"></div>\n      </div>\n      <span class='amethyst-crystal-label'>${amethystCrystalLabels[i]}</span>\n      <span class='amethyst-crystal-count' id='crystal-count-${i}' style=\"display:block; position:absolute; left:50%; top:112px; transform:translateX(-50%); font-size:15px; color:#cc88ff; font-weight:600; text-shadow:0 0 8px #fff,0 0 2px #cc88ff;\">0</span>\n    `;
+    btn.onclick = () => {
+      startAmethystPad();
+      amethystOrbStates[i] = true;
+      amethystSynths[i].triggerAttackRelease(amethystNotes[i], '8n');
+      btn.style.transform = 'scale(1.08) rotate(-2deg)';
+      btn.style.filter = 'drop-shadow(0 0 32px #e8d5ffcc)';
+      // Increment play count in Firebase
+      const countRef = playCountsRef.child(i);
+      countRef.transaction(current => (current || 0) + 1);
+      setTimeout(()=>{
+        amethystOrbStates[i] = false;
+        btn.style.transform = '';
+        btn.style.filter = 'drop-shadow(0 0 18px #cc88ff99)';
+      }, 400);
+    };
+    panel.appendChild(btn);
+  }
+  // Listen for play count changes in Firebase
+  playCountsRef.on('value', snap => {
+    const data = snap.val() || {};
+    for(let i=0;i<amethystOrbCount;i++) {
+      const count = data[i] || 0;
+      amethystPlayCounts[i] = count;
+      const countSpan = document.getElementById('crystal-count-'+i);
+      if (countSpan) countSpan.textContent = count;
+    }
+  });
+  // Stop All logic
+  document.getElementById('amethyst-stopall').onclick = () => {
+    amethystOrbStates = Array(amethystOrbCount).fill(false);
+    if (amethystPadStarted) {
+      amethystAmbientPad.triggerRelease(['C4','E4','G4','B4']);
+      amethystPadStarted = false;
+    }
+    // Reset crystal visuals
+    const btns = panel.querySelectorAll('.amethyst-crystal-btn');
+    btns.forEach((btn, i) => {
+      btn.style.transform = '';
+      btn.style.filter = 'drop-shadow(0 0 18px #cc88ff99)';
+    });
+  };
+  function startAmethystPad() {
+    if (!amethystPadStarted) {
+      amethystPadStarted = true;
+      amethystAmbientPad.triggerAttack(['C4','E4','G4','B4'], undefined, 0.3);
+    }
+  }
+}
+window.addEventListener('DOMContentLoaded', setupAmethystMachine);
 </script>
 
 </body>
